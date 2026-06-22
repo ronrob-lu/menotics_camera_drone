@@ -1,0 +1,1 @@
+menotics camera drone test

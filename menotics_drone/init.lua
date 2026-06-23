@@ -4,11 +4,8 @@
 local modname = "menotics_drone"
 menotics_drone = menotics_drone or {}
 
--- Register settings
-minetest.register_setting("menotics_drone.audio_device_name", "", "string", "Name of the audio device for system audio capture (Windows: Stereo Mix device name, Linux: pulse/alsa device, macOS: device index)")
-minetest.register_setting("menotics_drone.os_type", "auto", "string", "Operating system type: auto, windows, linux, mac")
-minetest.register_setting("menotics_drone.fps", "20", "int", "Frames per second for recording (15-24 recommended)")
-minetest.register_setting("menotics_drone.max_duration", "90", "int", "Maximum recording duration in seconds")
+-- Settings will be loaded from settingtypes.txt automatically
+-- No need to register them manually with deprecated API
 
 -- Get insecure environment for file/OS operations
 local insecure = minetest.request_insecure_environment()

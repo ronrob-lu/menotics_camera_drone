@@ -1,0 +1,6 @@
+# Menotics Drone Settings
+
+menotics_drone.audio_device_name "" string "Name of the audio device for system audio capture (Windows: Stereo Mix device name, Linux: pulse/alsa device, macOS: device index)"
+menotics_drone.os_type "auto" string "Operating system type: auto, windows, linux, mac"
+menotics_drone.fps "20" int "Frames per second for recording (15-24 recommended)" 15 60
+menotics_drone.max_duration "90" int "Maximum recording duration in seconds" 10 300

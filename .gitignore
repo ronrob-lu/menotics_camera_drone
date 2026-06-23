@@ -1,4 +1,4 @@
 ```
-# Configuration files
-settingtypes.txt
+# Configuration
+*.conf
 ```

@@ -175,9 +175,26 @@ function menotics_drone.drone_logic.capture_frame(player_name, recording_data)
         recording_data.frame_count = recording_data.frame_count + 1
         recording_data.last_frame_time = precise_time
         
-        -- Take screenshot using chat command (most compatible method)
-        -- This works in all Minetest versions and secure environments
-        minetest.chat_send_cmd(player_name, "take_screenshot")
+        -- Try to take screenshot using available methods
+        local screenshot_taken = false
+        
+        -- Method 1: Direct take_screenshot function (if available)
+        if minetest.take_screenshot then
+            minetest.take_screenshot()
+            screenshot_taken = true
+        -- Method 2: Chat command (if available)
+        elseif minetest.chat_send_cmd then
+            minetest.chat_send_cmd(player_name, "take_screenshot")
+            screenshot_taken = true
+        end
+        
+        if not screenshot_taken then
+            -- No secure screenshot method available
+            minetest.chat_send_player(player_name, "ERROR: Your Luanti version does not support automatic screenshots in secure mode.")
+            minetest.chat_send_player(player_name, "Please use F12 key manually to take screenshots, or enable trusted_mods for full features.")
+            menotics_drone.drone_logic.stop_recording(player_name)
+            return
+        end
         
         -- Optional: Log to debug instead of spamming chat
         -- minetest.debug("[Menotics Drone] Captured frame " .. recording_data.frame_count .. " for " .. player_name)

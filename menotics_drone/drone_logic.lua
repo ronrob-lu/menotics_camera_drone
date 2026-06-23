@@ -1,10 +1,8 @@
--- Menotics Camera Drone - Drone Logic
--- Handles camera positioning, recording state, and globalstep updates
+-- Menotics Camera Drone - Drone Logic (Secure Version)
+-- Handles camera positioning and screenshot capture
+-- No insecure environment - uses only built-in Minetest functions
 
 local modname = "menotics_drone"
-local insecure = menotics_drone.insecure
-local os = insecure.os
-local io = insecure.io
 
 menotics_drone.drone_logic = {}
 
@@ -15,6 +13,12 @@ local LERP_FACTOR = 0.1 -- Smoothing factor (0-1, higher = snappier)
 
 -- Track active drone cameras per player
 local drone_cameras = {}
+
+-- Get world path for storing screenshots
+local function get_world_temp_dir(player_name)
+    local worldpath = minetest.get_worldpath()
+    return worldpath .. "/menotics_drone_temp/" .. player_name
+end
 
 -- Initialize recording for a player
 function menotics_drone.drone_logic.start_recording(player_name)
@@ -27,34 +31,24 @@ function menotics_drone.drone_logic.start_recording(player_name)
         return false
     end
     
-    -- Create temp directory for frames
-    local temp_dir = insecure.os.tmpname()
-    -- Remove the temp file and create as directory
-    insecure.os.remove(temp_dir)
-    insecure.os.execute('mkdir "' .. temp_dir .. '"')
+    -- Create temp directory for frames using worldpath (secure)
+    local temp_dir = get_world_temp_dir(player_name)
     
     -- Initialize recording data
     menotics_drone.recording_players[player_name] = {
         active = true,
-        start_time = insecure.os.time(),
+        start_time = os.time(),
         temp_dir = temp_dir,
         frame_count = 0,
-        last_frame_time = 0,
-        audio_file = nil,
-        audio_pid = nil
+        last_frame_time = 0
     }
-    
-    -- Start audio capture
-    local audio_success, audio_msg = menotics_drone.ffmpeg_handler.start_audio_capture(player_name, temp_dir)
-    if not audio_success then
-        minetest.log("warning", "[Menotics Drone] Audio capture failed: " .. audio_msg)
-        minetest.chat_send_player(player_name, "Warning: Audio capture may have failed. Video will be silent if this persists.")
-    end
     
     -- Enable drone camera
     menotics_drone.drone_logic.enable_drone_camera(player_name)
     
-    minetest.chat_send_player(player_name, "Recording started! Max duration: 90 seconds. Click again to stop early.")
+    minetest.chat_send_player(player_name, "Screenshot mode started! Click again to stop.")
+    minetest.chat_send_player(player_name, "Note: This secure version captures individual screenshots only.")
+    minetest.chat_send_player(player_name, "Videos are saved automatically in your world's 'screenshots' folder.")
     
     return true
 end
@@ -69,8 +63,7 @@ function menotics_drone.drone_logic.stop_recording(player_name)
     -- Disable drone camera
     menotics_drone.drone_logic.disable_drone_camera(player_name)
     
-    -- Finalize recording
-    menotics_drone.ffmpeg_handler.finalize_recording(player_name)
+    minetest.chat_send_player(player_name, "Screenshot capture stopped. Check your world's screenshots folder!")
     
     -- Clear recording data
     menotics_drone.recording_players[player_name] = nil
@@ -164,47 +157,30 @@ function menotics_drone.drone_logic.globalstep(dtime)
         local recording_data = menotics_drone.recording_players[player_name]
         if recording_data and recording_data.active then
             menotics_drone.drone_logic.capture_frame(player_name, recording_data)
-            
-            -- Check for max duration (90 seconds)
-            local max_duration = tonumber(minetest.settings:get("menotics_drone.max_duration")) or 90
-            local elapsed = insecure.os.time() - recording_data.start_time
-            
-            if elapsed >= max_duration then
-                minetest.chat_send_player(player_name, "Maximum recording duration reached (90 seconds). Saving...")
-                menotics_drone.drone_logic.stop_recording(player_name)
-            end
         end
         
         ::continue::
     end
 end
 
--- Capture a single frame for recording
+-- Capture a single frame (screenshot) for recording
 function menotics_drone.drone_logic.capture_frame(player_name, recording_data)
     local fps = tonumber(minetest.settings:get("menotics_drone.fps")) or 20
     local frame_interval = 1.0 / fps
-    local current_time = insecure.os.time() -- This gives seconds, need better precision
     
-    -- Use get_us_time for better precision if available
-    local precise_time = minetest.get_us_time and minetest.get_us_time() / 1000000 or current_time
+    -- Use get_us_time for better precision
+    local precise_time = minetest.get_us_time and minetest.get_us_time() / 1000000 or os.time()
     
     if precise_time - recording_data.last_frame_time >= frame_interval then
         recording_data.frame_count = recording_data.frame_count + 1
         recording_data.last_frame_time = precise_time
         
-        -- Request screenshot
-        local frame_filename = string.format("%s/frame_%04d.png", recording_data.temp_dir, recording_data.frame_count)
-        
-        -- Take screenshot (this saves to screenshots dir by default, we'll need to move it)
+        -- Take screenshot - Minetest handles saving automatically
         minetest.take_screenshot({
-            player = player_name,
-            callback = function(filename)
-                -- Move screenshot to our temp directory
-                if filename then
-                    insecure.os.rename(filename, frame_filename)
-                end
-            end
+            player = player_name
         })
+        
+        minetest.chat_send_player(player_name, "Screenshot " .. recording_data.frame_count .. " captured!")
     end
 end
 

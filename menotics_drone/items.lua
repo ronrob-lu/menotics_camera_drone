@@ -1,5 +1,6 @@
--- Menotics Camera Drone - Item Definition and Crafting
--- Defines the camera drone item, crafting recipe, and interaction handlers
+-- Menotics Camera Drone - Item Definition (Secure Version)
+-- Defines the camera drone item for screenshot capture
+-- No insecure environment needed
 
 local modname = "menotics_drone"
 
@@ -8,7 +9,7 @@ local drone_texture = "menotics_drone_camera.png"
 
 -- Register the camera drone item
 minetest.register_craftitem("menotics_drone:camera_drone", {
-    description = "Menotics Camera Drone\nLeft/Right-click to toggle recording\nCreates vertical 9:16 video shorts with audio",
+    description = "Menotics Camera Drone (Secure)\nLeft/Right-click to toggle screenshot mode\nCaptures screenshots at set FPS",
     inventory_image = drone_texture,
     wield_image = drone_texture,
     stack_max = 1,
@@ -45,11 +46,6 @@ minetest.register_craftitem("menotics_drone:camera_drone", {
 })
 
 -- Crafting recipe: Steel ingots, mesecon conductors, glass, and diamond
--- Shape:
--- S G S
--- M D M
--- S C S
--- S = Steel Ingot, G = Glass, M = Mesecon Conductor, D = Diamond, C = Copper Ingot
 minetest.register_craft({
     output = "menotics_drone:camera_drone",
     recipe = {
@@ -59,7 +55,7 @@ minetest.register_craft({
     }
 })
 
--- Alternative simpler recipe if default materials aren't available
+-- Alternative simpler recipe
 minetest.register_craft({
     output = "menotics_drone:camera_drone",
     recipe = {
@@ -69,44 +65,24 @@ minetest.register_craft({
     }
 })
 
--- Chat command to list audio devices
-minetest.register_chatcommand("drone_audio_setup", {
-    description = "List available audio devices for Menotics Drone recording",
-    func = function(player_name)
-        local device_list = menotics_drone.ffmpeg_handler.list_audio_devices()
-        
-        minetest.chat_send_player(player_name, "=== Available Audio Devices ===")
-        
-        -- Split and send each line
-        for line in device_list:gmatch("[^\r\n]+") do
-            minetest.chat_send_player(player_name, line)
-        end
-        
-        minetest.chat_send_player(player_name, "===============================")
-        minetest.chat_send_player(player_name, "Set your audio device name with: /set menotics_drone.audio_device_name <device_name>")
-        minetest.chat_send_player(player_name, "For Windows: Use 'Stereo Mix' or your desktop audio device name")
-        minetest.chat_send_player(player_name, "For Linux: Usually 'default' works with PulseAudio")
-        minetest.chat_send_player(player_name, "For macOS: Use the device index number (e.g., '0')")
-        
-        return true
-    end
-})
-
 -- Help command
 minetest.register_chatcommand("drone_help", {
-    description = "Show help for Menotics Camera Drone",
+    description = "Show help for Menotics Camera Drone (Secure Version)",
     func = function(player_name)
-        minetest.chat_send_player(player_name, "=== Menotics Camera Drone Help ===")
+        minetest.chat_send_player(player_name, "=== Menotics Camera Drone (Secure) Help ===")
         minetest.chat_send_player(player_name, "1. Craft the Camera Drone item")
-        minetest.chat_send_player(player_name, "2. Hold it and left/right-click to start recording")
+        minetest.chat_send_player(player_name, "2. Hold it and left/right-click to start screenshot mode")
         minetest.chat_send_player(player_name, "3. The drone camera follows 3 blocks high, 5 blocks behind you")
-        minetest.chat_send_player(player_name, "4. Recording stops automatically at 90 seconds or click again to stop early")
-        minetest.chat_send_player(player_name, "5. Videos are saved to: <mod_folder>/recordings/")
+        minetest.chat_send_player(player_name, "4. Screenshots are captured at the configured FPS")
+        minetest.chat_send_player(player_name, "5. Click again to stop capturing")
         minetest.chat_send_player(player_name, "")
-        minetest.chat_send_player(player_name, "Audio Setup:")
-        minetest.chat_send_player(player_name, "- Run /drone_audio_setup to list available audio devices")
-        minetest.chat_send_player(player_name, "- Set your device: /set menotics_drone.audio_device_name <name>")
-        minetest.chat_send_player(player_name, "- FFmpeg must be installed system-wide!")
+        minetest.chat_send_player(player_name, "Note: This is the SECURE version.")
+        minetest.chat_send_player(player_name, "- No video compilation (screenshots only)")
+        minetest.chat_send_player(player_name, "- No audio recording")
+        minetest.chat_send_player(player_name, "- Screenshots saved to world's screenshots folder")
+        minetest.chat_send_player(player_name, "")
+        minetest.chat_send_player(player_name, "Settings:")
+        minetest.chat_send_player(player_name, "- /set menotics_drone.fps <number> (default: 20)")
         return true
     end
 })

@@ -175,12 +175,12 @@ function menotics_drone.drone_logic.capture_frame(player_name, recording_data)
         recording_data.frame_count = recording_data.frame_count + 1
         recording_data.last_frame_time = precise_time
         
-        -- Take screenshot - Minetest handles saving automatically
-        minetest.take_screenshot({
-            player = player_name
-        })
+        -- Take screenshot using chat command (most compatible method)
+        -- This works in all Minetest versions and secure environments
+        minetest.chat_send_cmd(player_name, "take_screenshot")
         
-        minetest.chat_send_player(player_name, "Screenshot " .. recording_data.frame_count .. " captured!")
+        -- Optional: Log to debug instead of spamming chat
+        -- minetest.debug("[Menotics Drone] Captured frame " .. recording_data.frame_count .. " for " .. player_name)
     end
 end
 
